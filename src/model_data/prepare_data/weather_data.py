@@ -6,17 +6,29 @@ from fastf1.core import Session
 class Weather:
     """Prepare weather data for a given session
 
-    This class obtains aggregated weather data for each driver during the time in which they were on the track. This class is of type iterator that can be used to obtain all weather data for a given session. Weather data includes known desciptives like: temperature, windspeed, pressure, etc. An exhaustive aggregation is computed by using metrics like: max, min, average, and standard deviation. 
+    This class obtains aggregated weather data for each driver during the time 
+    in which they were on the track. This class is of type iterator that can be 
+    used to obtain all weather data for a given session. Weather data includes 
+    known desciptives like: temperature, windspeed, pressure, etc. An 
+    exhaustive aggregation is computed by using metrics like: max, min, 
+    average, and standard deviation. 
     
-    It is originally unknown which weather fields are most important in aiding in the determination of a racer's chance of winning, but further analysis can be conducted via feature importance to determine this matter
+    It is originally unknown which weather fields are most important in aiding 
+    in the determination of a racer's chance of winning, but further analysis 
+    can be conducted via feature importance to determine this matter
 
     Args:
-        lap_data: the already prepared lap data from lap_data.py. This way weather data can just be appended to the end of each driver's session lap aggregations
+        lap_data: the already prepared lap data from lap_data.py. This way 
+                  weather data can just be appended to the end of each driver's 
+                  session lap aggregations
 
-        data: passed in as a fastf1 Session type. This datatype includes all possible information on the given session. This function uses it's "weather_data" method to obtain weather related data
+        data: passed in as a fastf1 Session type. This datatype includes all 
+              possible information on the given session. This function uses 
+              it's "weather_data" method to obtain weather related data
 
     Returns:
-        results: race result data for each driver and event descriptions. Returns a pandas dataframe
+        results: race result data for each driver and event descriptions. 
+                 Returns a pandas dataframe
         
     """
 
@@ -26,13 +38,15 @@ class Weather:
         self.lap_data_indices: List = list(self.lap_data.index)
 
     def weather_for_racer(self, row: object) -> pd.DataFrame:
-        """Get a single row of weather data for a given driver in a given session
+        """Get a single row of weather data for a given driver in a given 
+        session
 
         Args:
             row: lap data as a single row already computed for driver
 
         Returns:
-            output: single row of inclusion of weather data to a driver's lap data. Returns a pandas dataframe
+            output: single row of inclusion of weather data to a driver's lap 
+                    data. Returns a pandas dataframe
 
         """
 

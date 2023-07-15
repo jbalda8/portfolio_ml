@@ -4,7 +4,7 @@ import pandas as pd
 from fastf1.events import get_event_schedule, EventSchedule
 from fastf1.core import Session
 
-from src.model_data.session_objects import SessionObjects
+from src.model_data.season_objects.session_objects import SessionObjects
 
 
 class F1Season:
@@ -13,10 +13,13 @@ class F1Season:
     Args:
         year: the year of the season
 
-        end_date: The last day a session could take place on, determined by the training data cutoff. Only relevant for a season that is ongoing
+        end_date: the last day a session could take place on, determined by the 
+                  training data cutoff. Only relevant for a season that is 
+                  ongoing
 
     Returns:
-        valid_season_df: holds the event info for valid events in a season with session names and objects within dataframe
+        valid_season_df: holds the event info for valid events in a season with 
+                         session names and objects within dataframe
             
     """
 

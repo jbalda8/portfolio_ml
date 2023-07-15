@@ -11,17 +11,23 @@ set_log_level("ERROR") # Set fastf1 logging to errors only
 class SessionObjects:
     """Obtain fastf1 Session objects for a event in a season
 
-    This class is of type iterator and obtains Session objects for each event in a F1 season. The valid events in an F1 season are determined in the f1_season.py file. Each session in an event is tagged and used to obtain data (from files in prepare_data folder)
+    This class is of type iterator and obtains Session objects for each event 
+    in a F1 season. The valid events in an F1 season are determined in the 
+    f1_season.py file. Each session in an event is tagged and used to obtain 
+    data (from files in prepare_data folder)
 
     Args:
         year: the year of the season in which the event takes place
 
-        gp: stands for Grand Prix and is either the name of the Grand Prix in full or the race rank in a season (i.e. what order the race is in the season)
+        gp: stands for Grand Prix and is either the name of the Grand Prix in 
+            full or the race rank in a season (i.e. what order the race is in 
+            the season)
 
     Returns:
         session_name: the name of the session, e.g. Practice 1
         
-        session_object: of fastf1 type Session, which holds all data for the given session specified
+        session_object: of fastf1 type Session, which holds all data for the 
+                        given session specified
             
     """
 
@@ -37,7 +43,8 @@ class SessionObjects:
             None
 
         Returns:
-            session_names_list: list of session names, e.g. ['Practice 1', 'Practice 2', 'Practice 3', 'Qualifying']
+            session_names_list: list of session names, e.g. ['Practice 1', 
+            'Practice 2', 'Practice 3', 'Qualifying']
 
         """
 
@@ -77,7 +84,8 @@ class SessionObjects:
             session_type = splits[0]
             session_round = None
 
-        # Obtain the fastf1 function to get session data. Either get_qualifying, get_practice, get_sprint, or get_sprint_shootout
+        # Obtain the fastf1 function to get session data. Either 
+        # get_qualifying, get_practice, get_sprint, or get_sprint_shootout
         function_name = f"get_{session_type.lower()}"
         if hasattr(self.event, function_name):
             session_func = getattr(self.event, function_name)

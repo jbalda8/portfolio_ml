@@ -7,7 +7,11 @@ from typing import Tuple
 def lap_number_pr(pr_bool: np.array) -> int:
     """Obtain the lap number for a driver's session personal best
 
-    The IsPersonalBest field in session.laps is a boolean field that marks whether a lap was a personal best at the time of that lap finishing. This means that for each driver in a session, you could have multiple True indications. This function returns the best lap number overall, i.e. the last lap where a lap is marked as a Personal Best lap
+    The IsPersonalBest field in session.laps is a boolean field that marks 
+    whether a lap was a personal best at the time of that lap finishing. This 
+    means that for each driver in a session, you could have multiple True 
+    indications. This function returns the best lap number overall, i.e. the 
+    last lap where a lap is marked as a Personal Best lap
 
     Args:
         pr_bool: bool array of IsPersonalBest for driver's laps
@@ -33,13 +37,21 @@ def lap_number_pr(pr_bool: np.array) -> int:
 def prepare_lap_data(data: Session) -> pd.DataFrame:
     """Prepare lap data for a given session
 
-    Lap data includes an exhaustive list of aggregated lap related fields, e.g. lap time overall, lap time at each sector, speeds, and personal best lap number. The aggregations include common metrics like min, max, average, and standard deviation. Not everything may be useful, but it would be easy to obtain feature importance and analyze which of these metrics are most useful in predicting how a racer is doing/will do 
+    Lap data includes an exhaustive list of aggregated lap related fields, e.g. 
+    lap time overall, lap time at each sector, speeds, and personal best lap 
+    number. The aggregations include common metrics like min, max, average, and 
+    standard deviation. Not everything may be useful, but it would be easy to 
+    obtain feature importance and analyze which of these metrics are most 
+    useful in predicting how a racer is doing/will do 
 
     Args:
-        data: passed in as a fastf1 Session type. This datatype includes all possible information on the given session. This function uses it's "laps" method to obtain lap data
+        data: passed in as a fastf1 Session type. This datatype includes all 
+              possible information on the given session. This function uses 
+              it's "laps" method to obtain lap data
 
     Returns:
-        aggregated_lap_data: data for each driver within a session with their laps information. Returns a pandas dataframe
+        aggregated_lap_data: data for each driver within a session with their 
+                             laps information. Returns a pandas dataframe
 
     """
 

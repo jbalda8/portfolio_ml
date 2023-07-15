@@ -5,16 +5,29 @@ from fastf1.core import Session
 def prepare_driver_data(data: Session) -> pd.DataFrame:
     """Prepare driver data for a given session
 
-    Driver data includes demographic information for each driver, along with team information. This function is used for each individual session. Although it is unlikely that this information will change throughout a F1 season, it has happened before (in the case of a F1 team changing drivers midway through the season). Therefore, to avoid any issues/missing information, this function is kept on the session grain.
+    Driver data includes demographic information for each driver, along with 
+    team information. This function is used for each individual session. 
+    Although it is unlikely that this information will change throughout a F1 
+    season, it has happened before (in the case of a F1 team changing drivers 
+    midway through the season). Therefore, to avoid any issues/missing 
+    information, this function is kept on the session grain.
 
     Args:
-        data: passed in as a fastf1 Session type. This datatype includes all possible information on the given session. This function uses it's get_driver() method to obtain driver information
+        data: passed in as a fastf1 Session type. This datatype includes all 
+              possible information on the given session. This function uses 
+              it's get_driver() method to obtain driver information
 
     Returns:
-        full_driver_data: data for each driver within a session. Returns a pandas dataframe:
-            DriverNumber: the unique driver number for a given driver in the session
-            TeamId: the team identification in which the driver belongs to
-            CountryCode: the country of origin for a given driver
+        full_driver_data: data for each driver within a session. Returns a 
+                          pandas dataframe:
+                              DriverNumber: the unique driver number for a 
+                                            given driver in the session
+
+                              TeamId: the team identification in which the    
+                                      driver belongs to
+                                      
+                              CountryCode: the country of origin for a given 
+                                           driver
             
     """
 

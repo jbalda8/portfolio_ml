@@ -1,7 +1,7 @@
 from typing import List, Tuple
 import pandas as pd
 
-from src.model_data.f1_season import F1Season
+from src.model_data.season_objects.f1_season import F1Season
 from src.model_data.prepare_data.lap_data import prepare_lap_data
 from src.model_data.prepare_data.weather_data import Weather
 from src.model_data.prepare_data.control_message_data import prepare_control_message_data
