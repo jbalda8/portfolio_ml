@@ -1,24 +1,19 @@
-import pandas as pd
-
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
-
-from catboost import CatBoostRegressor, Pool
+from catboost import CatBoostRegressor
 
 import ray
 from ray import tune
-from ray.tune.search.hyperopt import HyperOptSearch
 from ray.air import session
+
 
 class RayTune:
 
     def __init__(self, search_algorithm, search_space, data) -> None:
-        self.search_algorithm = search_algorithm
-        self.search_space = search_space
+        self.search_alg = search_algorithm
+        self.space = search_space
         self.data = data
 
-    def objective(self, config, data):
+    @staticmethod
+    def objective(config, data):
 
         # Set the CatBoostRegressor parameters based on the config
         model = CatBoostRegressor(
@@ -58,22 +53,34 @@ class RayTune:
             
         session.report({metric_lower: globals()[metric_lower], "done": True})
 
-    def tuner(self):
+    def tuner(self,
+              init_config,
+              cpu_per_trial,
+              gpu_per_trail,
+              max_concurrent_trials,
+              num_samples):
+
+        ray.init(**init_config)
 
         trainable_with_cpu_gpu = (
-            tune.with_resources(self.objective, {"cpu" : 4, "gpu": 0.2})
+            tune.with_resources(self.objective,
+                                {"cpu" : cpu_per_trial, 
+                                 "gpu": gpu_per_trail})
         )
 
         # Create Tuner object
         tuner = tune.Tuner(
-            tune.with_parameters(trainable_with_cpu_gpu, data=data),
+            tune.with_parameters(trainable_with_cpu_gpu, data=self.data),
             tune_config=tune.TuneConfig(
-                search_alg=hyperopt_search,
-                max_concurrent_trials=5, 
-                num_samples=5
+                search_alg=self.search_alg,
+                max_concurrent_trials=max_concurrent_trials, 
+                num_samples=num_samples
             ),
-            param_space=space,
+            param_space=self.space,
         )
 
         # Fit Tuner
         results = tuner.fit()
+        ray.shutdown()
+
+        return results

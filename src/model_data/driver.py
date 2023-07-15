@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 import pandas as pd
 
 from src.model_data.f1_season import F1Season
@@ -15,13 +15,7 @@ class RunAllMethods:
         self.seasons = seasons
         self.end_date = pd.to_datetime(end_date)
 
-    def __iter__(self):
-        return self
-    
-    def __next__(self) -> pd.DataFrame:
-        if len(self.seasons) == 0:
-            raise StopIteration
-            
+    def get_next_season(self) -> Tuple[int, List]:
         curr_season = self.seasons.pop(0)
 
         f1_season = F1Season(curr_season, self.end_date)
@@ -30,6 +24,17 @@ class RunAllMethods:
         events = f1_season.valid_season_df['SeasonEvents']
         combined_dict = [(key, value) for values in events 
                          for key, value in values.items()]
+        
+        return (curr_season, combined_dict)
+
+    def __iter__(self):
+        return self
+    
+    def __next__(self) -> pd.DataFrame:
+        if len(self.seasons) == 0:
+            raise StopIteration
+        
+        curr_season, combined_dict = self.get_next_season()
         
         feature_df = pd.DataFrame()
         result_df = pd.DataFrame()
@@ -50,6 +55,7 @@ class RunAllMethods:
                 results = prepare_race_data(session_object)
                 results['SeasonYear'] = curr_season
                 results['EventName'] = session_object.event.EventName
+                results['RoundNumber'] = session_object.event.RoundNumber
 
                 # Merge race data
                 result_df = (
