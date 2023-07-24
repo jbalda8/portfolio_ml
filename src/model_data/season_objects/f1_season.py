@@ -10,6 +10,8 @@ from src.model_data.season_objects.session_objects import SessionObjects
 class F1Season:
     """Obtain fastf1 season dataframe with session objects in each event
 
+    TODO: Decription
+
     Args:
         year: the year of the season
 
@@ -30,6 +32,8 @@ class F1Season:
         self.valid_season_df: pd.DataFrame = self.get_season_dataframe() 
 
     def get_season_dataframe(self) -> pd.DataFrame:
+        # TODO: Doctring
+
         # Currently testing without Sprint races
         season_df = (
             pd.DataFrame(self.full_season)
@@ -44,6 +48,8 @@ class F1Season:
         return finished_events
     
     def get_season_sessions(self, round_number: int) -> Dict[str, Session]:
+        # TODO: Doctring
+
         # Get all sessions in an event
         session_class = SessionObjects(self.year, round_number)
         
@@ -57,6 +63,8 @@ class F1Season:
         return event_dict
     
     def update_season_dataframe(self) -> None:
+        # TODO: Doctring
+
         # Get all sessions for each event in valid season races
         self.valid_season_df['SeasonEvents'] = (
             self.valid_season_df['RoundNumber']

@@ -39,12 +39,16 @@ class SessionObjects:
     def get_session_names(self) -> List[str]:
         """Get a list of session names in a given event
 
+        Event object returns a callable data storage of session information 
+        within the event. This method pulls the name of the sessions to aid in 
+        the process of pulling each session object
+
         Args:
             None
 
         Returns:
             session_names_list: list of session names, e.g. ['Practice 1', 
-            'Practice 2', 'Practice 3', 'Qualifying']
+                                'Practice 2', 'Practice 3', 'Qualifying']
 
         """
 
@@ -90,6 +94,8 @@ class SessionObjects:
         if hasattr(self.event, function_name):
             session_func = getattr(self.event, function_name)
 
+        # Will have to change get_season_dataframe() method in f1_season.py if  
+        # Sprint races are desired. Currently only pulls conventional races
         if session_round and session_type not in ['Sprint', 'Sprint Shootout']:
             session_object = session_func(session_round)
         else:

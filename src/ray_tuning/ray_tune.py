@@ -1,3 +1,4 @@
+from typing import Dict
 from catboost import CatBoostRegressor
 
 import ray
@@ -6,14 +7,42 @@ from ray.air import session
 
 
 class RayTune:
+    """Perform distributed hyperparameter optimization via ray tune
 
-    def __init__(self, search_algorithm, search_space, data) -> None:
+    Args:
+        search_alg:
+
+        space:
+
+        data:
+
+    Returns:
+        results:
+            
+    """
+
+    def __init__(self,
+                 search_algorithm,
+                 search_space: Dict,
+                 data: Dict) -> None:
+        
         self.search_alg = search_algorithm
-        self.space = search_space
-        self.data = data
+        self.space: Dict = search_space
+        self.data: Dict = data
 
     @staticmethod
-    def objective(config, data):
+    def objective(config, data) -> None:
+        """Definition of objective function used to train each tuning trial
+
+        Args:
+            config:
+
+            data:
+
+        Returns:
+            None
+                
+        """
 
         # Set the CatBoostRegressor parameters based on the config
         model = CatBoostRegressor(
@@ -59,6 +88,23 @@ class RayTune:
               gpu_per_trail,
               max_concurrent_trials,
               num_samples):
+        """Tuning procedure
+
+        Args:
+            init_config:
+
+            cpu_per_trial:
+
+            gpu_per_trail:
+
+            max_concurrent_trials:
+
+            num_samples:
+
+        Returns:
+            results:
+                
+        """
 
         ray.init(**init_config)
 
