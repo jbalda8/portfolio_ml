@@ -113,6 +113,8 @@ class Weather:
         return self
     
     def __next__(self) -> pd.DataFrame:
+        # TODO: Docstring
+
         # If no more driver lap data, end iterator
         if len(self.lap_data_indices) == 0:
             raise StopIteration

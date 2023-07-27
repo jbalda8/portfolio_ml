@@ -69,6 +69,8 @@ class SessionObjects:
         return self
     
     def __next__(self) -> Tuple[str, Session]:
+        # TODO: Docstring
+
         # Stop iteration criteria
         if self.current_index >= len(self.session_names):
             raise StopIteration    

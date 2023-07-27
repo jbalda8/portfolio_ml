@@ -80,6 +80,8 @@ class RunAllMethods:
         return self
     
     def __next__(self) -> pd.DataFrame:
+        # TODO: Docstring
+
         if len(self.seasons) == 0:
             raise StopIteration
         

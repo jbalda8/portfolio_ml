@@ -103,6 +103,8 @@ class RayTune:
     def objective(config: Dict, data: Dict) -> None:
         """Definition of objective function used to train each tuning trial
 
+        # TODO: Description
+
         Args:
             config: a single sampled hyperparameter set to be used for the  
                     current trial. Passed in as **config to imported model
