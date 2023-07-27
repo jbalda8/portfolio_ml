@@ -68,7 +68,8 @@ class RayTune:
                                               CatBoostRegressor
 
                   fit_params (optional): dictionary of the fit parameters to    
-                                         pass into the model at run time (used inside the .fit() method)
+                                         pass into the model at run time (used 
+                                         inside the .fit() method)
 
                   metric_class_str (required): string name of the Scikit-Learn  
                                                Function excluding the "metrics" 
@@ -76,8 +77,12 @@ class RayTune:
                                                e.g. "accuracy_score". Defined 
                                                in https://scikit-learn.org/stable/modules/model_evaluation.html
 
+                  metric_params (optional): dictionary of additional parameters 
+                                            to pass in to Sklearn metric chosen
+
                   probability (required): boolean value to determine if metric 
-                                          requires predict_proba() (set to True), otherwise False
+                                          requires predict_proba() (set to 
+                                          True), otherwise False
 
     Returns:
         results: the output of tuner.fit() -> ResultGrid. Contains tuning 
@@ -124,13 +129,25 @@ class RayTune:
         model_class_str = data.get('model_class_str')
         model_class = getattr(model_module, model_class_str)
 
+        # Optional fit params
+        try:
+            fit_params = data.get('fit_params')
+        except KeyError:
+            fit_params = {}
+
+        # Optional metric params
+        try:
+            metric_params = data.get('metric_params')
+        except KeyError:
+            metric_params = {}
+
         # Set the model parameters based on the config
         model = model_class(**config)
 
         # Train the model
         model.fit(train_data[0],
                   train_data[1],
-                  **data.get('fit_params'))
+                  **fit_params)
 
         # Import Scikit-Learn Metric - TODO: Make work for other packages (or 
         # custom metrics)
@@ -138,7 +155,8 @@ class RayTune:
         metric_class_str = data.get('metric_class_str')
         metric_class = getattr(metric_module, metric_class_str)
 
-        # Probability required (e.g. logloss uses predict_proba() so True, F1 uses predict() so False)
+        # Probability required (e.g. logloss uses predict_proba() so True, F1 
+        # uses predict() so False)
         probability = data.get('probability')
 
         # Score from metric is based on validation if data exists
@@ -146,21 +164,29 @@ class RayTune:
             # predict_proba for probability metrics (e.g. logloss)
             if probability:
                 y_pred = model.predict_proba(validation_data[0])
-                score = metric_class(validation_data[1], y_pred)
+                score = metric_class(validation_data[1],
+                                     y_pred,
+                                     **metric_params)
             # Other metrics use predict (class prediction)
             else:
                 y_pred = model.predict(validation_data[0])
-                score = metric_class(validation_data[1], y_pred)
+                score = metric_class(validation_data[1],
+                                     y_pred,
+                                     **metric_params)
         # Else score from metric is based on train data
         else:
             # predict_proba for probability metrics (e.g. logloss)
             if probability:
                 y_pred = model.predict_proba(train_data[0])
-                score = metric_class(train_data[1], y_pred)
+                score = metric_class(train_data[1],
+                                     y_pred,
+                                     **metric_params)
             # Other metrics use predict (class prediction)
             else:
                 y_pred = model.predict(train_data[0])
-                score = metric_class(train_data[1], y_pred)
+                score = metric_class(train_data[1],
+                                     y_pred,
+                                     **metric_params)
 
         # Report score to Ray Tune Session            
         session.report({metric_class_str: score, "done": True})
