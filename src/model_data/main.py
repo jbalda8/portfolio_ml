@@ -131,9 +131,23 @@ class RunAllMethods:
                 # Merge control message data with full dataset
                 updated_full_dataset = (
                     pd.merge(full_dataset, 
-                                racer_flags, 
-                                on='DriverNumber', 
-                                how='left')
+                             racer_flags, 
+                             on='DriverNumber', 
+                             how='left')
+                )
+
+                # Only include the most recent control message in the case the 
+                # driver has more than 1
+                message_column = 'Category'
+                columns_to_group = (
+                    [col for col in updated_full_dataset.columns 
+                     if col != message_column]
+                )
+                updated_full_dataset = (
+                    updated_full_dataset
+                    .groupby(columns_to_group)[columns_to_group]
+                    .last()
+                    .reset_index(drop=True)
                 )
 
                 # Prepare driver data
@@ -141,9 +155,9 @@ class RunAllMethods:
                 # Merge driver data
                 updated_full_dataset = (
                     pd.merge(updated_full_dataset, 
-                                driver_data, 
-                                on='DriverNumber', 
-                                how='left')
+                             driver_data, 
+                             on='DriverNumber', 
+                             how='left')
                 )
 
                 # Add session information
