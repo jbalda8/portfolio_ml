@@ -138,16 +138,16 @@ class RunAllMethods:
 
                 # Only include the most recent control message in the case the 
                 # driver has more than 1
-                message_column = 'Category'
                 columns_to_group = (
-                    [col for col in updated_full_dataset.columns 
-                     if col != message_column]
+                    [column for column in updated_full_dataset.columns 
+                     if column != 'Category']
                 )
+
                 updated_full_dataset = (
                     updated_full_dataset
-                    .groupby(columns_to_group)[columns_to_group]
+                    .groupby(columns_to_group)['Category']
                     .last()
-                    .reset_index(drop=True)
+                    .reset_index()
                 )
 
                 # Prepare driver data
