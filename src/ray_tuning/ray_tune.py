@@ -7,6 +7,8 @@ from ray.air import session
 from ray.tune import ResultGrid
 
 
+ray.shutdown() # In case ray is already initialized 
+
 class RayTune:
     """Perform distributed hyperparameter optimization via ray tune
 
@@ -46,43 +48,48 @@ class RayTune:
                distributions or value sets using tune api. Full examples/
                possibilities can be found here: https://docs.ray.io/en/latest/tune/api/search_space.html#tune-search-space
 
+        TODO: Create seperate data class
         data: a dictionary of the most useful requirements/optional information 
               to pass into the objective function. Information can be described 
               as follows:
                   train_data (required): a tuple of training data, e.g. 
                                          (X_train, y_train)
 
-                  validation_data (optional): a tuple of validation data, e.g. 
-                                              (X_val, y_val). NOTE: Only needed 
-                                              if using validation data to 
-                                              compute the score (result of each 
-                                              trial), otherwise leave out
-                                    
                   model_module (required): string name of the module for which 
                                            the machine learning model comes 
                                            from, e.g. "catboost"
-
+                                
                   model_class_str (required): string name of the model class of 
                                               the machine learning model, e.g. 
                                               CatBoostClassifier or 
                                               CatBoostRegressor
-
-                  fit_params (optional): dictionary of the fit parameters to    
-                                         pass into the model at run time (used 
-                                         inside the .fit() method)
-
+                                    
                   metric_class_str (required): string name of the Scikit-Learn  
                                                Function excluding the "metrics" 
                                                portion (not the Scoring name), 
                                                e.g. "accuracy_score". Defined 
                                                in https://scikit-learn.org/stable/modules/model_evaluation.html
+                                            
+                  probability (required): boolean value to determine if metric 
+                                          requires predict_proba() (set to 
+                                          True), otherwise False
+
+                  validation_data (optional): a tuple of validation data, e.g. 
+                                              (X_val, y_val). NOTE: Only needed 
+                                              if using validation data to 
+                                              compute the score (result of each 
+                                              trial), otherwise leave out
+
+                  fit_params (optional): dictionary of the fit parameters to    
+                                         pass into the model at run time (used 
+                                         inside the .fit() method)
 
                   metric_params (optional): dictionary of additional parameters 
                                             to pass in to Sklearn metric chosen
 
-                  probability (required): boolean value to determine if metric 
-                                          requires predict_proba() (set to 
-                                          True), otherwise False
+                  metric_name (optional): optional name for metric in objective 
+                                          output. If not used, name will be 
+                                          metric_class_str
 
     Returns:
         results: the output of tuner.fit() -> ResultGrid. Contains tuning 
@@ -121,10 +128,7 @@ class RayTune:
         # Train data - Required
         train_data = data.get('train_data')
         # Validation data, if exists. None otherwise
-        try:
-            validation_data = data.get('validation_data')
-        except KeyError:
-            validation_data = None
+        validation_data = data.get('validation_data')
 
         # Allow for dynamic model definitions
         model_module = import_module(data.get('model_module'))
@@ -132,24 +136,22 @@ class RayTune:
         model_class = getattr(model_module, model_class_str)
 
         # Optional fit params
-        try:
-            fit_params = data.get('fit_params')
-        except KeyError:
-            fit_params = {}
+        fit_params = data.get('fit_params')
 
         # Optional metric params
-        try:
-            metric_params = data.get('metric_params')
-        except KeyError:
-            metric_params = {}
+        metric_params = data.get('metric_params')
 
         # Set the model parameters based on the config
         model = model_class(**config)
 
         # Train the model
-        model.fit(train_data[0],
-                  train_data[1],
-                  **fit_params)
+        if fit_params: # If fit params defined
+            model.fit(train_data[0],
+                      train_data[1],
+                      **fit_params)
+        else:
+            model.fit(train_data[0],
+                      train_data[1])
 
         # Import Scikit-Learn Metric - TODO: Make work for other packages (or 
         # custom metrics)
@@ -161,37 +163,36 @@ class RayTune:
         # uses predict() so False)
         probability = data.get('probability')
 
-        # Score from metric is based on validation if data exists
-        if validation_data:
-            # predict_proba for probability metrics (e.g. logloss)
-            if probability:
-                y_pred = model.predict_proba(validation_data[0])
-                score = metric_class(validation_data[1],
-                                     y_pred,
-                                     **metric_params)
-            # Other metrics use predict (class prediction)
-            else:
-                y_pred = model.predict(validation_data[0])
-                score = metric_class(validation_data[1],
-                                     y_pred,
-                                     **metric_params)
-        # Else score from metric is based on train data
+        all_data = {
+            'X': validation_data[0] if validation_data else train_data[0],
+            'y_true': validation_data[1] if validation_data else train_data[1],
+        }
+
+        # predict_proba for probability metrics (e.g. logloss)
+        if probability:
+            y_pred = model.predict_proba(all_data.pop('X'))
+            all_data['y_pred'] = y_pred
+            score = (
+                (lambda: metric_class(**all_data, **metric_params))() 
+                if metric_params is not None else metric_class(**all_data)
+            )
+
+        # Other metrics use predict (class prediction)
         else:
-            # predict_proba for probability metrics (e.g. logloss)
-            if probability:
-                y_pred = model.predict_proba(train_data[0])
-                score = metric_class(train_data[1],
-                                     y_pred,
-                                     **metric_params)
-            # Other metrics use predict (class prediction)
-            else:
-                y_pred = model.predict(train_data[0])
-                score = metric_class(train_data[1],
-                                     y_pred,
-                                     **metric_params)
+            y_pred = model.predict(all_data.pop('X'))
+            all_data['y_pred'] = y_pred
+            score = (
+                (lambda: metric_class(**all_data, **metric_params))() 
+                if metric_params is not None else metric_class(**all_data)
+            )
+
+        # Optional Metric Name
+        metric_name = data.get('metric_name')
 
         # Report score to Ray Tune Session            
-        session.report({metric_class_str: score, "done": True})
+        session.report(
+            {metric_name if metric_name else metric_class_str: score, 
+             "done": True})
 
     def tuner(self,
               init_config: Dict,
