@@ -14,3 +14,9 @@
 
 # Catboost info
 catboost_info/*
+
+# Notebook checkpoints
+.ipynb_checkpoints/*
+
+__pycache__
+__pycache__/*
