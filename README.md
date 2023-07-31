@@ -86,7 +86,7 @@ To set up the required environment for your project using Conda, follow these st
 2. **Install Conda:** If you don't have Conda installed, download and install Anaconda or Miniconda by following the instructions for your operating system:
 
    - [Anaconda](https://www.anaconda.com/products/individual)
-   - [Miniconda](https://docs.conda.io/en/latest/miniconda.html)<br><br>
+   - [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
 
 3. **Create a New Environment:** Open a terminal or command prompt and run the following command to create a new environment named "formula1_predictor" (you can choose a different name if you prefer inside environment.yml):
 
