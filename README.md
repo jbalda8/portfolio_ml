@@ -104,11 +104,17 @@ To use the "Formula 1 Race Predictor" machine learning model, follow these steps
     conda activate formula1_predictor
     ```
 
-2. **Prepare Data:** Ensure you have the data for your Formula 1 sessions in a structured format (e.g., CSV, Excel, or DataFrame). The dataset should contain the features specified in the [Features](#features) section, such as driver statistics, lap times, weather conditions, and other relevant information. There are example datasets in the *data* folder. You can also reference the **Pull Data** section in the *machine_learning_full_lifecycle.ipynb" notebook for an example on how to pull data.
+2. **Prepare Data:** Ensure you have the data for your Formula 1 sessions in a structured format (e.g., CSV, Excel, or DataFrame). The dataset should contain the features specified in the [Features](#features) section, such as driver statistics, lap times, weather conditions, and other relevant information. There are example datasets in the *data* folder. You can also reference the **Pull Data** section in the *machine_learning_full_lifecycle.ipynb* notebook for an example on how to obtain data using the *src/model_data* module.
 
-3. **Data Preprocessing:** Before feeding the data into the model, perform necessary data preprocessing steps. This may involve handling missing values, feature scaling, encoding categorical variables, and splitting the data into training and testing sets. You can reference the *machine_learning_full_lifecycle.ipynb* for an example using catboost.
+3. **Data Preprocessing:** Before feeding the data into the model, perform necessary data preprocessing steps. This may involve handling missing values, feature scaling, encoding categorical variables, and splitting the data into training and testing sets.
 
-4. **Model Training:** Train the "Formula 1 Race Predictor" model using the preprocessed data. Import the necessary libraries and load the dataset. Split the data into features (X) and the target variable (y). Instantiate the model and fit it to the training data.
+4. **Hyperparameter Tuning:** Before training the final model and evaluating the performance, it is helpful to tune the hyperparameters for the model of choice. There is a procedure set up in the *src/ray_tuning* module that uses Ray Tune: A distributed hyperparameter tuning package. A helpful visual provided by Ray Tune to describe to process:
+
+![Alt text](https://docs.ray.io/en/latest/_images/tune_flow.png)
+
+You can find a full example in the Hyperparameter Optimization section in the *machine_learning_full_lifecycle.ipynb* notebook.
+
+5. **Model Training:** Train the "Formula 1 Race Predictor" model using the preprocessed data. Import the necessary libraries and load the dataset. Split the data into features (X) and the target variable (y). Instantiate the model and fit it to the training data.
 
    ```python
    # Example Python code for model training
@@ -126,8 +132,12 @@ To use the "Formula 1 Race Predictor" machine learning model, follow these steps
    # Split the data into training and testing sets
    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-   # Instantiate and train the model
-   model = CatBoostRegressor()
+   params = {
+      # Define parameter set here - From tuning
+   }
+
+   # Instantiate and train the model using optimized parameter set
+   model = CatBoostRegressor(**params)
    model.fit(X_train, y_train)
 
 ## Evaluation
@@ -150,59 +160,61 @@ The "Formula 1 Race Predictor" model has shown promising results in predicting t
 
 Feature Importance (Top 20 Features): 
 
-|    | Feature                |   Importance |
-|---:|:-----------------------|-------------:|
-|  0 | TeamId                 |     32.3625  |
-|  1 | Driver                 |      9.61222 |
-|  2 | SeasonYear             |      4.3194  |
-|  3 | SpeedFL_std            |      1.71069 |
-|  4 | SpeedST_std            |      1.70791 |
-|  5 | SpeedI1_min            |      1.70208 |
-|  6 | Sector1TimeSeconds_min |      1.68767 |
-|  7 | SpeedST_min            |      1.6198  |
-|  8 | SpeedFL_min            |      1.57691 |
-|  9 | SpeedI1_mean           |      1.47165 |
-| 10 | SpeedI1_std            |      1.38573 |
-| 11 | TrackTemp_mean         |      1.34834 |
-| 12 | WindSpeed_mean         |      1.31693 |
-| 13 | Sector2TimeSeconds_std |      1.20522 |
-| 14 | SpeedFL_mean           |      1.20281 |
-| 15 | WindDirection_mean     |      1.18462 |
-| 16 | SpeedI2_mean           |      1.13946 |
-| 17 | TrackTemp_std          |      1.13023 |
-| 18 | Sector1TimeSeconds_max |      1.10384 |
-| 19 | SpeedI2_std            |      1.0973  |
+|    | Feature                 |   Importance |
+|---:|:------------------------|-------------:|
+|  0 | TeamId                  |    39.4998   |
+|  1 | SeasonYear              |    12.939    |
+|  2 | Driver                  |     7.21664  |
+|  3 | SpeedI1_min             |     2.92208  |
+|  4 | Sector1TimeSeconds_max  |     2.37767  |
+|  5 | LapTimeSeconds_max      |     2.36861  |
+|  6 | SpeedI2_mean            |     2.25792  |
+|  7 | SpeedFL_std             |     1.66686  |
+|  8 | Pressure_min            |     1.32463  |
+|  9 | Sector3TimeSeconds_max  |     1.23987  |
+| 10 | Sector3TimeSeconds_std  |     1.14842  |
+| 11 | Sector1TimeSeconds_min  |     1.11676  |
+| 12 | RoundNumber             |     0.962125 |
+| 13 | Sector2TimeSeconds_mean |     0.940766 |
+| 14 | SpeedST_mean            |     0.915074 |
+| 15 | SpeedST_std             |     0.905343 |
+| 16 | Sector2TimeSeconds_std  |     0.876212 |
+| 17 | WindSpeed_std           |     0.858126 |
+| 18 | Sector1TimeSeconds_std  |     0.767986 |
+| 19 | LapTimeSeconds_min      |     0.758734 |
 
 Example race results with predictions:
 
 |    | Driver   | EventName        |   SeasonYear |   Position |   Points |   PredictedPoints |
 |---:|:---------|:-----------------|-------------:|-----------:|---------:|------------------:|
-|  0 | VER      | Miami Grand Prix |         2023 |          1 |       26 |         18.0725   |
-|  1 | HAM      | Miami Grand Prix |         2023 |          6 |        8 |         15.8886   |
-|  2 | RUS      | Miami Grand Prix |         2023 |          4 |       12 |         13.8039   |
-|  3 | PER      | Miami Grand Prix |         2023 |          2 |       18 |         13.5481   |
-|  4 | LEC      | Miami Grand Prix |         2023 |          7 |        6 |          9.89182  |
-|  5 | SAI      | Miami Grand Prix |         2023 |          5 |       10 |          9.71395  |
-|  6 | NOR      | Miami Grand Prix |         2023 |         17 |        0 |          6.58196  |
-|  7 | ALO      | Miami Grand Prix |         2023 |          3 |       15 |          2.59517  |
-|  8 | GAS      | Miami Grand Prix |         2023 |          8 |        4 |          1.86957  |
-|  9 | OCO      | Miami Grand Prix |         2023 |          9 |        2 |          1.69518  |
-| 10 | PIA      | Miami Grand Prix |         2023 |         19 |        0 |          1.19671  |
-| 11 | BOT      | Miami Grand Prix |         2023 |         13 |        0 |          0.83791  |
-| 12 | STR      | Miami Grand Prix |         2023 |         12 |        0 |          0.667938 |
-| 13 | DEV      | Miami Grand Prix |         2023 |         18 |        0 |          0.636996 |
-| 14 | TSU      | Miami Grand Prix |         2023 |         11 |        0 |          0.590246 |
-| 15 | HUL      | Miami Grand Prix |         2023 |         15 |        0 |          0.528032 |
-| 16 | ALB      | Miami Grand Prix |         2023 |         14 |        0 |          0.475799 |
-| 17 | MAG      | Miami Grand Prix |         2023 |         10 |        1 |          0.314835 |
-| 18 | ZHO      | Miami Grand Prix |         2023 |         16 |        0 |          0.295501 |
-| 19 | SAR      | Miami Grand P
+|  0 | VER      | Miami Grand Prix |         2023 |          1 |       26 |         17.5999   |
+|  1 | PER      | Miami Grand Prix |         2023 |          2 |       18 |         17.2954   |
+|  2 | HAM      | Miami Grand Prix |         2023 |          6 |        8 |         14.9895   |
+|  3 | RUS      | Miami Grand Prix |         2023 |          4 |       12 |         11.576    |
+|  4 | LEC      | Miami Grand Prix |         2023 |          7 |        6 |         10.7393   |
+|  5 | SAI      | Miami Grand Prix |         2023 |          5 |       10 |          9.38954  |
+|  6 | NOR      | Miami Grand Prix |         2023 |         17 |        0 |          3.95676  |
+|  7 | OCO      | Miami Grand Prix |         2023 |          9 |        2 |          3.04603  |
+|  8 | GAS      | Miami Grand Prix |         2023 |          8 |        4 |          2.66433  |
+|  9 | PIA      | Miami Grand Prix |         2023 |         19 |        0 |          1.68342  |
+| 10 | DEV      | Miami Grand Prix |         2023 |         18 |        0 |          1.41777  |
+| 11 | ALO      | Miami Grand Prix |         2023 |          3 |       15 |          0.852914 |
+| 12 | BOT      | Miami Grand Prix |         2023 |         13 |        0 |          0.777002 |
+| 13 | STR      | Miami Grand Prix |         2023 |         12 |        0 |          0.728528 |
+| 14 | TSU      | Miami Grand Prix |         2023 |         11 |        0 |          0.573643 |
+| 15 | MAG      | Miami Grand Prix |         2023 |         10 |        1 |          0.492269 |
+| 16 | ALB      | Miami Grand Prix |         2023 |         14 |        0 |          0.368515 |
+| 17 | SAR      | Miami Grand Prix |         2023 |         20 |        0 |          0.311086 |
+| 18 | HUL      | Miami Grand Prix |         2023 |         15 |        0 |          0.275934 |
+| 19 | ZHO      | Miami Grand Prix |         2023 |         16 |        0 |          0.274426 |
 
 Full analysis can be seen in *machine_learning_full_lifecycle.ipynb*
 
 ## Future Work
 
 Listed below are some potential future enhancements and tasks for the "Formula 1 Race Predictor" machine learning model:
+
+- **Data Class of Ray Tune** I have created a data class in *src/ray_tuning/data.py* that needs to be implemented in ray_tune.py in order to use my custom overfitting metric (optionally) instead of an sklearn metric.
 
 - **Feature Engineering:** Continuously investigate new features that could enhance the model's understanding of driver performance during sessions.
 
