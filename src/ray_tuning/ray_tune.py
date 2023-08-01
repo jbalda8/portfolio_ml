@@ -7,8 +7,6 @@ from ray.air import session
 from ray.tune import ResultGrid
 
 
-ray.shutdown() # In case ray is already initialized 
-
 class RayTune:
     """Perform distributed hyperparameter optimization via ray tune
 
@@ -230,7 +228,9 @@ class RayTune:
                      and results
                 
         """
-
+        
+         # In case ray is already initialized 
+        ray.shutdown()
         # Initialize ray cluster
         ray.init(**init_config)
 
